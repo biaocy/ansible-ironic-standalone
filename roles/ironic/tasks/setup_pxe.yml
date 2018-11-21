@@ -108,11 +108,15 @@
 - block:
   - name: Check if pxelinux exits
     stat:
+      get_checksum: yes
+      checksum_algorithm: md5
       path: "{{ ironic_pxe_tftp_root }}/pxelinux.0"
     register: __syslinux_tftp_pxelinux
 
   - name: Check if pxelinux has changed
     stat:
+      get_checksum: yes
+      checksum_algorithm: md5
       path: "{{ ironic_syslinux_basedir }}/syslinux-{{ ironic_pxe_syslinux_version }}/bios/core/pxelinux.0"
     register: __syslinux_basedir_pxelinux
 
@@ -127,7 +131,7 @@
     - bios/com32/chain/chain.c32
     when: >
         not __syslinux_tftp_pxelinux.stat.exists
-        or __syslinux_tftp_pxelinux.stat.md5 != __syslinux_basedir_pxelinux.stat.md5
+        or __syslinux_tftp_pxelinux.stat.checksum != __syslinux_basedir_pxelinux.stat.checksum
     args:
       chdir: "{{ ironic_syslinux_basedir }}/syslinux-{{ ironic_pxe_syslinux_version }}"
     tags: ["pxelinux"]
