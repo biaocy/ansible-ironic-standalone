@@ -1,2 +1,4 @@
 .*.sw*
 .vagrant/
+# vs code history
+.history/
