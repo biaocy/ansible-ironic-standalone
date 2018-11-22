@@ -13,13 +13,13 @@
 - block:
   - name: Downloading IPA Coreos ramdisk (~250 MB)
     get_url:
-      checksum: "{{ ironic_pxe_ipa_img_checksum }}"
+      # checksum: "{{ ironic_pxe_ipa_img_checksum }}"
       url: "{{ ironic_pxe_ipa_img_url }}"
       dest: "{{ ironic_deploy_http_root }}/{{ ironic_pxe_ipa_img_name }}"
 
   - name: Downloading IPA Coreos kernel (~25 MB)
     get_url:
-      checksum: "{{ ironic_pxe_ipa_kernel_checksum }}"
+      # checksum: "{{ ironic_pxe_ipa_kernel_checksum }}"
       url: "{{ ironic_pxe_ipa_kernel_url }}"
       dest: "{{ ironic_deploy_http_root }}/{{ ironic_pxe_ipa_kernel_name }}"
 
@@ -39,13 +39,13 @@
 - block:
   - name: Tiny Core Ironic Python Agent ramdisk (~40 MB)
     get_url:
-      checksum: "{{ ironic_pxe_tinyipa_img_checksum }}"
+      # checksum: "{{ ironic_pxe_tinyipa_img_checksum }}"
       url: "{{ ironic_pxe_tinyipa_img_url }}"
       dest: "{{ ironic_deploy_http_root }}/{{ ironic_pxe_tinyipa_img_name }}"
 
   - name: Tiny Core Ironic Python Agent kernel (~4 MB)
     get_url:
-      checksum: "{{ ironic_pxe_tinyipa_kernel_checksum }}"
+      # checksum: "{{ ironic_pxe_tinyipa_kernel_checksum }}"
       url: "{{ ironic_pxe_tinyipa_kernel_url }}"
       dest: "{{ ironic_deploy_http_root }}/{{ ironic_pxe_tinyipa_kernel_name }}"
 
