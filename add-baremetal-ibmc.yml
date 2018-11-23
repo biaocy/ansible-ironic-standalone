@@ -131,7 +131,7 @@
         openstack baremetal node deploy 
         --os-token="{{ Ironic_api_token }}"
         --os-url="{{ Ironic_api_public_url }}"
-        --config-drive {{ __configdrive }} "{{ baremetal_uuid }}"
+        {{ __configdrive }} "{{ baremetal_uuid }}"
       when: deploy | trim == "y"
       delegate_to: "{{ groups.client[0] }}"
       become: no
