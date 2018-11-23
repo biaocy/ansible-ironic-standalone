@@ -128,10 +128,10 @@
 
     - name: Active and deploy the server
       command: >
-        openstack baremetal node deploy "{{ baremetal_uuid }}"
+        openstack baremetal node deploy 
         --os-token="{{ Ironic_api_token }}"
         --os-url="{{ Ironic_api_public_url }}"
-        --config-drive {{ __configdrive }}
+        --config-drive {{ __configdrive }} "{{ baremetal_uuid }}"
       when: deploy | trim == "y"
       delegate_to: "{{ groups.client[0] }}"
       become: no

@@ -2,6 +2,10 @@
 # The driver is linked to the image definition on purpose
 # because the images could be created for a specific driver
 baremetal_driver: "ibmc"
+baremetal_driver_boot_interface: "pxe"
+baremetal_driver_deploy_interface: "iscsi"
+baremetal_driver_power_interface: "ibmc"
+baremetal_driver_management_interface: "ibmc"
 
 # Folder relative to the servers
 baremetal_deploy_kernel: "{{ Ironic_deploy_kernel }}"
