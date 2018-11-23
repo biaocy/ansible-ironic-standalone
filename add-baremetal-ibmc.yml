@@ -1,0 +1,139 @@
+---
+- name: Define and deploy physical servers using Ironic
+  hosts: ironic-api
+  become: yes
+  vars_prompt:
+    - name: "id"
+      prompt: "Server Name"
+      private: no
+    - name: "deploy"
+      prompt: "Deploy the server (y) or enroll (n)?"
+      private: no
+      default: "y"
+
+  pre_tasks:
+    - name: "Load Ironic (encrypted) variables"
+      include_vars: "{{ item }}"
+      with_first_found:
+      - "vars/{{ deployment }}/Ironic.yml"
+      - "vars/Ironic.yml"
+
+    - name: "Load (encrypted) baremetal variables"
+      include_vars: "{{ item }}"
+      with_first_found:
+      - "vars/{{ deployment }}/Baremetal.yml"
+      - "vars/Baremetal.yml"
+
+    # Minimun set of variables required, defaults are taken from the previous load
+    - name: Load hostvars
+      set_fact: 
+        baremetal_ibmc_addr: "{{ hostvars[id]['baremetal_ibmc_addr'] | default(baremetal_ibmc_addr) }}"
+        baremetal_ibmc_user: "{{ hostvars[id]['baremetal_ibmc_user'] | default(baremetal_ibmc_user) }}"
+        baremetal_ibmc_pass: "{{ hostvars[id]['baremetal_ibmc_pass'] | default(baremetal_ibmc_pass) }}"
+        baremetal_ibmc_sys: "{{ hostvars[id]['baremetal_ibmc_sys'] | default(baremetal_ibmc_sys) }}"
+        baremetal_ibmc_verify_ca: "{{ hostvars[id]['baremetal_ibmc_verify_ca'] | default(baremetal_ibmc_verify_ca) }}"
+        baremetal_os: "{{ hostvars[id]['baremetal_os'] | default(Baremetal_os) }}"
+        baremetal_macs: "{{ hostvars[id]['baremetal_macs'] | default(Baremetal_macs) }}"
+        baremetal_network: "{{ hostvars[id]['baremetal_network'] | default(Baremetal_network) }}"
+        baremetal_fqdn: "{{ hostvars[id]['baremetal_fqdn'] | default(Baremetal_fqdn) }}"
+        baremetal_domain: "{{ hostvars[id]['baremetal_domain'] | default(Baremetal_domain) }}"
+        baremetal_name: "{{ hostvars[id]['baremetal_name'] | default(Baremetal_name) }}"
+        baremetal_console_port: "{{ hostvars[id]['baremetal_console_port'] | default(Baremetal_console_port) }}"
+        baremetal_cloudconfig: "{{ hostvars[id]['baremetal_cloudconfig'] | default(Baremetal_cloudconfig) }}"
+        baremetal_ssh_public_key: "{{ hostvars[id]['baremetal_ssh_public_key'] | default(Baremetal_ssh_public_key) }}"
+        baremetal_ssh_public_key_path: "{{ hostvars[id]['baremetal_ssh_public_key_path'] | default(Baremetal_ssh_public_key_path) }}"
+        baremetal_use_configdrive: "{{ hostvars[id]['baremetal_use_configdrive'] | default(Baremetal_use_configdrive) }}"
+
+    - name: Load image variable definitions
+      include_vars: "{{ item }}"
+      with_first_found:
+      - "vars/{{ deployment }}/images/{{ baremetal_os }}.yml"
+      - "vars/images/{{ baremetal_os }}.yml"
+
+    # Sanity checks of the variables and check Ironic server definition
+    - include: tasks/baremetal_prepare.yml _baremetal_create=true
+      when: id != 'vbox'
+
+    # Sanity checks of the variables and check Ironic server definition
+    - include: tasks/baremetal_vbox.yml _baremetal_create=true
+      when: id == 'vbox'
+
+    - include: tasks/baremetal_md5.yml
+      when: baremetal_image_checksum is not defined or not baremetal_image_checksum
+
+    - include: tasks/baremetal_configdrive.yml
+      when: baremetal_use_configdrive
+
+  roles:
+    - role: configdrive
+      configdrive_os_family: "{{ baremetal_image_type }}"
+      configdrive_uuid: "{{ baremetal_uuid }}"
+      configdrive_fqdn: "{{ baremetal_name }}.{{ baremetal_domain }}"
+      configdrive_name: "{{ baremetal_name }}"
+      configdrive_config_user_data_path: "{{ baremetal_cloudconfig }}"
+      configdrive_config_dir: "{{ Ironic_metadata_path }}"
+      configdrive_volume_path: "{{ Ironic_metadata_path }}"
+      configdrive_network_device_list: "{{ baremetal_network }}"
+      configdrive_ssh_public_key: "{{ baremetal_ssh_public_key }}"
+      configdrive_ssh_public_key_path: "{{ baremetal_ssh_public_key_path }}"
+      configdrive_volume_ext: ".cfgd"
+      configdrive_volume: true
+      configdrive_meta:
+        deploy_date: "{{ ansible_date_time.iso8601  }}"
+        deploy_host: "{{ ansible_hostname }}"
+      when: baremetal_use_configdrive
+
+
+  tasks:
+    - name: Define the install image for the node
+      command: >
+        openstack baremetal node set "{{ baremetal_uuid }}"
+        --os-token="{{ Ironic_api_token }}"
+        --os-url="{{ Ironic_api_public_url }}"
+        --instance-info image_source="{{ baremetal_image }}"
+        --instance-info image_checksum="{{ baremetal_image_checksum }}"
+        --instance-info root_gb="{{ baremetal_image_rootsize }}"
+        --extra deploy_date="{{ ansible_date_time.iso8601 }}"
+        --extra deploy_host="{{ ansible_hostname }}"
+      delegate_to: "{{ groups.client[0] }}"
+      become: no
+      run_once: yes
+
+    - name: Define the kernel and ramdisk for the image
+      command: >
+        openstack baremetal node set "{{ baremetal_uuid }}"
+        --os-token="{{ Ironic_api_token }}"
+        --os-url="{{ Ironic_api_public_url }}"
+        --instance-info kernel="{{ baremetal_image_kernel }}"
+        --instance-info ramdisk="{{ baremetal_image_ramdisk }}"
+      when: baremetal_image_kernel and baremetal_image_ramdisk
+      delegate_to: "{{ groups.client[0] }}"
+      become: no
+      run_once: yes
+
+    - name: Add reference to config-drive in metadata info
+      command: >
+        openstack baremetal node set "{{ baremetal_uuid }}"
+        --os-token="{{ Ironic_api_token }}"
+        --os-url="{{ Ironic_api_public_url }}"
+        --instance-info configdrive="{{ Ironic_configdrive_url }}/{{ baremetal_uuid }}"
+      when: baremetal_use_configdrive
+      delegate_to: "{{ groups.client[0] }}"
+      become: no
+      run_once: yes
+
+    - name: Define configdrive url param
+      set_fact:
+        __configdrive: "{{ baremetal_use_configdrive | ternary('--config-drive %s/%s%s' % (Ironic_configdrive_url, baremetal_uuid, configdrive_volume_ext), '') }}"
+
+    - name: Active and deploy the server
+      command: >
+        openstack baremetal node deploy "{{ baremetal_uuid }}"
+        --os-token="{{ Ironic_api_token }}"
+        --os-url="{{ Ironic_api_public_url }}"
+        --config-drive {{ __configdrive }}
+      when: deploy | trim == "y"
+      delegate_to: "{{ groups.client[0] }}"
+      become: no
+      run_once: yes
+

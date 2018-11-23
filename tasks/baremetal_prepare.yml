@@ -1,19 +1,20 @@
 ---
-# Check the length of the MAC, IPMI ip ...
+# Check the length of the MAC, iBMC ip ...
 - name: Validate MAC address(es)
   fail:
     msg: "MAC address incorrect!"
   when: item | length != 17
   with_items: "{{ baremetal_macs }}"
 
-# Check the length of the MAC, IPMI ip ...
-- name: Validate IPMI settings
+# Check the length of the MAC, iBMC ip ...
+- name: Validate iBMC settings
   fail:
-    msg: "IPMI settings incorrect!"
+    msg: "IBMC settings incorrect!"
   when: >
-    baremetal_ipmi_ip is not defined or not baremetal_ipmi_ip
-    or baremetal_ipmi_user is not defined or not baremetal_ipmi_user
-    or baremetal_ipmi_pass is not defined or not baremetal_ipmi_pass
+    baremetal_ibmc_addr is not defined or not baremetal_ibmc_addr
+    or baremetal_ibmc_user is not defined or not baremetal_ibmc_user
+    or baremetal_ibmc_pass is not defined or not baremetal_ibmc_pass
+    or baremetal_ibmc_sys is not defined or not baremetal_ibmc_sys
 
 # Define the name based on the fqdn
 - name: Define the server domain
@@ -31,20 +32,20 @@
     baremetal_name: "{{ baremetal_macs | first | regex_replace(':', '-') }}"
   when: baremetal_macs and not (baremetal_name is defined and baremetal_name)
 
-- name: Define the IPMI web console port for shellinabox
-  set_fact:
-    baremetal_console_port: "{{ baremetal_ipmi_ip.split('.')[-1]|int + 10000 }}"
-  when: baremetal_ipmi_ip and not (baremetal_console_port is defined and baremetal_console_port)
+# - name: Define the IPMI web console port for shellinabox
+#   set_fact:
+#     baremetal_console_port: "{{ baremetal_ibmc_ip.split('.')[-1]|int + 10000 }}"
+#   when: baremetal_ibmc_ip and not (baremetal_console_port is defined and baremetal_console_port)
 
 
 # Ironic checks
 - block:
   - name: Check if the node is defined in Ironic
     shell: >
-      ironic
-      --os-auth-token="{{ Ironic_api_token }}"
-      --ironic-url="{{ Ironic_api_public_url }}"
-      node-list | awk -F '|' "/ {{ baremetal_name }} /{ print \$2 }"
+      openstack baremetal node show
+      --os-token="{{ Ironic_api_token }}"
+      --os-url="{{ Ironic_api_public_url }}"
+      -f value -c uuid "{{ baremetal_name }}"
     register: __baremetal_new
     delegate_to: "{{ groups.client[0] }}"
     become: no
@@ -52,17 +53,18 @@
 
   - name: Define the new baremetal node in Ironic
     shell: >
-      ironic
-      --os-auth-token="{{ Ironic_api_token }}"
-      --ironic-url="{{ Ironic_api_public_url }}"
-      node-create -n "{{ baremetal_name }}" -d "{{ baremetal_driver }}"
-      -i ipmi_address="{{ baremetal_ipmi_ip }}"
-      -i ipmi_username="{{ baremetal_ipmi_user }}"
-      -i ipmi_password="{{ baremetal_ipmi_pass }}"
-      -i ipmi_terminal_port="{{ baremetal_console_port }}"
-      -i deploy_kernel="{{ baremetal_deploy_kernel }}"
-      -i deploy_ramdisk="{{ baremetal_deploy_ramdisk }}"
-      | awk "/ uuid /{ print \$4 }"
+      openstack baremetal node create
+      --os-token="{{ Ironic_api_token }}"
+      --os-url="{{ Ironic_api_public_url }}"
+      --name "{{ baremetal_name }}" --driver "{{ baremetal_driver }}"
+      --driver-info ibmc_address="{{ baremetal_ibmc_addr }}"
+      --driver-info ibmc_username="{{ baremetal_ibmc_user }}"
+      --driver-info ibmc_password="{{ baremetal_ibmc_pass }}"
+      --driver-info ibmc_system_id="{{ baremetal_ibmc_sys }}"
+      --driver-info ibmc_verify_ca="{{ baremetal_ibmc_verify_ca }}"
+      --driver-info deploy_kernel="{{ baremetal_deploy_kernel }}"
+      --driver-info deploy_ramdisk="{{ baremetal_deploy_ramdisk }}"
+      -f value -c uuid
     register: __baremetal_defined
     delegate_to: "{{ groups.client[0] }}"
     when: __baremetal_new.stdout | trim == ''
@@ -75,10 +77,10 @@
 
   - name: Define the MAC address ports in Ironic
     command: > 
-      ironic 
-      --os-auth-token="{{ Ironic_api_token }}"
-      --ironic-url="{{ Ironic_api_public_url }}"
-      port-create -n "{{ baremetal_uuid }}" -a "{{ item }}"
+      openstack baremetal port create
+      --os-token="{{ Ironic_api_token }}"
+      --os-url="{{ Ironic_api_public_url }}"
+      --node "{{ baremetal_uuid }}" "{{ item }}"
     with_items: "{{ baremetal_macs }}"
     when: baremetal_macs and __baremetal_new.stdout | trim == ''
     delegate_to: "{{ groups.client[0] }}"

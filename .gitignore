@@ -2,3 +2,5 @@
 .vagrant/
 # vs code history
 .history/
+# ansible hostvars, avoid secret infomation accidentally commit
+inventory/host_vars/
