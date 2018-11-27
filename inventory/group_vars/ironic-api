@@ -48,15 +48,15 @@ nginx_server_list:
       dav_access: "user:rw group:rw all:r"
       dav_methods: "PUT DELETE MKCOL COPY MOVE"
       default_type: "application/octet-stream"
-    - name: "/registry/"
-      autoindex: "off"
-      default_type: "application/json"
-      client_max_body_size: "10M"
-      content_by_lua_file: "webdav-registry.lua"
-      auth:
-        title: "BOSH Registry Auth"
-        users:
-          bosh: "{{ Ironic_bosh_registry_password }}"
+#    - name: "/registry/"
+#      autoindex: "off"
+#      default_type: "application/json"
+#      client_max_body_size: "10M"
+#      content_by_lua_file: "webdav-registry.lua"
+#      auth:
+#        title: "BOSH Registry Auth"
+#        users:
+#          bosh: "{{ Ironic_bosh_registry_password }}"
 
 
 ### Role ironic_webclient
