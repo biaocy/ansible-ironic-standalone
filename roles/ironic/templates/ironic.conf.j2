@@ -69,9 +69,9 @@ debug_tracebacks_in_api={{ ironic_debug | ternary('true','false') }}
 # "ironic.drivers" entrypoint. An example may be found in the
 # developer documentation online. (list value)
 {% if ironic_enabled_drivers is defined and not ironic_enabled_drivers is none -%}
-enabled_drivers={{ ironic_enabled_drivers | join(',') }}
+enabled_hardware_types={{ ironic_enabled_drivers | join(',') }}
 {% else %}
-enabled_drivers=pxe_ipmitool
+enabled_hardware_types=redfish
 {% endif %}
 
 # Specify the list of network interfaces to load during

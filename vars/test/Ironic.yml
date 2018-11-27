@@ -47,7 +47,7 @@ Ironic_images_path: '/var/lib/ironic/http/images'
 Ironic_metadata_path: '/var/lib/ironic/http/metadata'
 Ironic_deploy_path: '/var/lib/ironic/http/deploy'
 Ironic_pxe_path: '/var/lib/ironic/tftpboot'
-Ironic_bosh_registry: true
+Ironic_bosh_registry: false
 Ironic_bosh_registry_password: '{PLAIN}hola'
 Ironic_deploy_kernel: 'file:///var/lib/ironic/http/deploy/coreos_production_pxe.vmlinuz'
 Ironic_deploy_ramdisk: 'file:///var/lib/ironic/http/deploy/coreos_production_pxe_image-oem.cpio.gz'

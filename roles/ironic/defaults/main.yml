@@ -30,7 +30,7 @@ ironic_fatal_deprecations: False
 ironic_executor_thread_pool_size: 64
 ironic_graceful_shutdown_timeout: 60
 ironic_auth_strategy: "noauth"
-ironic_enabled_drivers: [ "pxe_ipmitool" ]
+ironic_enabled_drivers: [ "redfish" ]
 ironic_fatal_exception_format_errors: False
 ironic_pybasedir: /usr/lib/python2.7/dist-packages/ironic
 ironic_bindir: /usr/bin
