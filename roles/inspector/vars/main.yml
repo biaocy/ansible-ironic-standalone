@@ -1,5 +1,5 @@
 ---
-ironic_inspector_release: "queens"
+ironic_inspector_release: "rocky"
 ironic_inspector_os_repo_url:
 ironic_inspector_os_repo_key:
 

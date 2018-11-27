@@ -1,5 +1,5 @@
 ---
-ironic_release: "queens"
+ironic_release: "rocky"
 ironic_os_repo_url:
 ironic_os_repo_key:
 
