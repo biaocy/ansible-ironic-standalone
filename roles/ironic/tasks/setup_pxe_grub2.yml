@@ -1,12 +1,18 @@
 ---
 # Get grub2 for UEFI
 
+- name: Check UEFI shim tarball exists
+  stat:
+    path: "{{ ironic_syslinux_basedir }}/{{ ironic_pxe_shim_tarball_url | basename }}"
+  register: __stat_uefi_shim_tarball
+
 - name: Downloading UEFI shim tarball
   get_url:
     checksum: "{{ ironic_pxe_shim_tarball_checksum }}"
     url: "{{ ironic_pxe_shim_tarball_url }}"
     dest: "{{ ironic_syslinux_basedir }}/{{ ironic_pxe_shim_tarball_url | basename }}"
   register: __ironic_pxe_shim_tarball
+  when: __stat_uefi_shim_tarball.stat.exists == False
 
 - name: Unarchive shim tarball
   unarchive:

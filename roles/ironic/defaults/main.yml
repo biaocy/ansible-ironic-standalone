@@ -68,7 +68,7 @@ ironic_conductor_deploy_callback_timeout: 1800
 ironic_conductor_force_power_state_during_sync: False
 ironic_conductor_send_sensor_data: [ "ALL" ]
 ironic_conductor_inspect_timeout: 1800
-ironic_conductor_automated_clean: True
+ironic_conductor_automated_clean: False
 #ironic_conductor_configdrive_swift: "ironic_configdrive"
 
 

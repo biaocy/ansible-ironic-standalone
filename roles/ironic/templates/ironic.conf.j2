@@ -69,10 +69,21 @@ debug_tracebacks_in_api={{ ironic_debug | ternary('true','false') }}
 # "ironic.drivers" entrypoint. An example may be found in the
 # developer documentation online. (list value)
 {% if ironic_enabled_drivers is defined and not ironic_enabled_drivers is none -%}
-enabled_drivers={{ ironic_enabled_drivers | join(',') }}
+enabled_hardware_types={{ ironic_enabled_drivers | join(',') }}
 {% else %}
-enabled_drivers=pxe_ipmitool
+enabled_hardware_types=ipmi
 {% endif %}
+
+# Please specify the list of enabled interfaces accordingly.
+# https://docs.openstack.org/ironic/latest/install/enabling-drivers.html
+
+# Enabled deploy interfaces default
+enabled_deploy_interfaces=iscsi, direct
+#enabled_power_interfaces=
+#enabled_management_interfaces=
+
+# Default deploy interface, when no explicit value specified
+default_deploy_interface=iscsi
 
 # Specify the list of network interfaces to load during
 # service initialization. Missing network interfaces, or

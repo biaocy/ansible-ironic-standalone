@@ -33,7 +33,7 @@ Ironic_database_name: 'ironic'
 Ironic_inspector_database_user: 'inspector'
 Ironic_inspector_database_pass: 'inspector-4-mysql'
 Ironic_inspector_database_name: 'inspector'
-Ironic_conductor_drivers: ["ibmc", "pxe_ipmitool", "agent_ipmitool"]
+Ironic_conductor_drivers: ["ipmi"]
 Ironic_conductor_clean_nodes: false
 Ironic_conductor_download_tinyipa: false
 Ironic_conductor_download_ipa: false

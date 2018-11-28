@@ -38,12 +38,18 @@
     ironic_agent_deploy_logs_local_path is defined
     and not ironic_agent_deploy_logs_local_path is none
 
+- name: Check syslinux tarball exists
+  stat:
+    path: "{{ ironic_syslinux_basedir }}/syslinux-{{ ironic_pxe_syslinux_version }}.tgz"
+  register: __stat_syslinux_tarball
+
 - name: Downloading syslinux tarball from url
   get_url:
     checksum: "{{ ironic_pxe_syslinux_tarball_checksum }}"
     url: "{{ ironic_pxe_syslinux_tarball_url }}"
     dest: "{{ ironic_syslinux_basedir }}/syslinux-{{ ironic_pxe_syslinux_version }}.tgz"
   register: __ironic_syslinux_change
+  when: __stat_syslinux_tarball.stat.exists == False
 
 - name: Unarchive syslinux tarball
   unarchive:
