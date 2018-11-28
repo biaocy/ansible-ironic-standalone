@@ -11,3 +11,5 @@
     3. 修改裸机镜像配置文件：若制作其他版本镜像OS，请按需修改`baremetal_image`(根据`3.1`文件中的配置`baremetal_os`默认是`xenial`，所以镜像配置文件为`vars/test/images/xenial.yml`)
 5. 部署实例
     1. 在脚本根目录执行`ansible-playbook -vvvv -i inventory/inventory.test.ini add-baremetal-ibmc.yml`（若当前用户不是root用户，且root用户需要密码，则在参数`-vvvv`前添加参数`-K`）
+    2. 在`Server Name`提示输入实例名，即`test-ibmc`
+    3. `Deploy the server(y) or enroll (n)?[y]`提示询问是否创建实例后自动部署至裸机，回车输入默认是
