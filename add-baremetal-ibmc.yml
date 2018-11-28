@@ -127,7 +127,9 @@
         __configdrive: "{{ baremetal_use_configdrive | ternary('--config-drive %s/%s%s' % (Ironic_configdrive_url, baremetal_uuid, configdrive_volume_ext), '') }}"
 
     - name: Active and deploy the server
-      command: >
+      shell: >
+        openstack baremetal node manage "{{ baremetal_uuid }}" &&
+        openstack baremetal node provide "{{ baremetal_uuid }}" &&
         openstack baremetal node deploy 
         --os-token="{{ Ironic_api_token }}"
         --os-url="{{ Ironic_api_public_url }}"
