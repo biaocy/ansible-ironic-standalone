@@ -120,7 +120,7 @@ function usage {
 OP="${1}"
 IRONIC_RELEASE="${2}"
 
-if [ "$IRONIC_RELEASE" != "$IRONIC_REL_QUEENS" || "$IRONIC_RELEASE" != "$IRONIC_REL_ROCKY" ]]
+if [[ "$IRONIC_RELEASE" != "$IRONIC_REL_QUEENS" || "$IRONIC_RELEASE" != "$IRONIC_REL_ROCKY" ]]
 then
     usage
 fi
