@@ -15,13 +15,9 @@ IRONIC_VERSION="`pip show ironic --disable-pip-version-check | grep '^Version' |
 IRONIC_DIR="$PY_DIST_DIR/ironic"
 # Ironic egg info dir
 IRONIC_EGG_DIR="$PY_DIST_DIR/ironic-$IRONIC_VERSION.egg-info"
-# Ironic config file
-IRONIC_CONF_FILE="/etc/ironic/ironic.conf"
 
 # Files and copys path
 BAK_SUFFIX='.bak'
-PATH_CONF_INIT="$IRONIC_DIR/conf/__init__.py"
-PATH_CONF_INIT_BAK="$IRONIC_DIR/conf/__init__.py$BAK_SUFFIX"
 PATH_COMMON_EXCEPTION="$IRONIC_DIR/common/exception.py"
 PATH_COMMON_EXCEPTION_BAK="$IRONIC_DIR/common/exception.py$BAK_SUFFIX"
 PATH_ENTRY_POINTS="$IRONIC_EGG_DIR/entry_points.txt"
@@ -36,24 +32,9 @@ function patch {
 
     # Make copy, in case something broken after this script run,
     #  we can restore these file to recover ironic service
-    cp $PATH_CONF_INIT $PATH_CONF_INIT_BAK
     cp $PATH_COMMON_EXCEPTION $PATH_COMMON_EXCEPTION_BAK
 
-    # Add iBMC driver option register code
-    # echo >> $PATH_CONF_INIT
-    # echo 'from ironic.conf import ibmc' >> $PATH_CONF_INIT
-    # echo 'ibmc.register_opts(CONF)' >> $PATH_CONF_INIT
-    echo "
-from ironic.conf import ibmc
-ibmc.register_opts(CONF)
-" >> $PATH_CONF_INIT
-
     # Add iBMC related exceptions
-    # echo >> $PATH_COMMON_EXCEPTION
-    # echo 'class IBMCError(IronicException):' >> $PATH_COMMON_EXCEPTION
-    # echo '    _msg_fmt = _("IBMC exception occurred. Error: %(error)s")' >> $PATH_COMMON_EXCEPTION
-    # echo >> $PATH_COMMON_EXCEPTION
-    # echo >> $PATH_COMMON_EXCEPTION
     echo '
 
 class IBMCError(IronicException):
@@ -83,7 +64,6 @@ class IBMCConnectionError(IBMCError):
 
 # Undo patch function
 function undo_patch {
-    mv -f $PATH_CONF_INIT_BAK $PATH_CONF_INIT
     mv -f $PATH_COMMON_EXCEPTION_BAK $PATH_COMMON_EXCEPTION
     mv -f $PATH_ENTRY_POINTS_BAK $PATH_ENTRY_POINTS
 
