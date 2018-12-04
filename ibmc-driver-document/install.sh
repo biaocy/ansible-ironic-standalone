@@ -23,7 +23,7 @@ PATH_COMMON_EXCEPTION_BAK="$IRONIC_DIR/common/exception.py$BAK_SUFFIX"
 PATH_ENTRY_POINTS="$IRONIC_EGG_DIR/entry_points.txt"
 PATH_ENTRY_POINTS_BAK="$IRONIC_EGG_DIR/entry_points.txt$BAK_SUFFIX"
 # Patch file
-PATCH_FILE="$PWD/patch_for_rocky.tar"
+PATCH_FILE="$PWD/ironic_driver_for_iBMC.tar"
 
 # Patch function 
 function patch {
