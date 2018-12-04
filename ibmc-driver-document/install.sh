@@ -18,6 +18,8 @@ IRONIC_EGG_DIR="$PY_DIST_DIR/ironic-$IRONIC_VERSION.egg-info"
 
 # Files and copys path
 BAK_SUFFIX='.bak'
+PATH_INIT_CONF="$IRONIC_DIR/conf/__init__.py"
+PATH_INIT_CONF_BAK="$IRONIC_DIR/conf/__init__.py$BAK_SUFFIX"
 PATH_COMMON_EXCEPTION="$IRONIC_DIR/common/exception.py"
 PATH_COMMON_EXCEPTION_BAK="$IRONIC_DIR/common/exception.py$BAK_SUFFIX"
 PATH_ENTRY_POINTS="$IRONIC_EGG_DIR/entry_points.txt"
@@ -32,7 +34,15 @@ function patch {
 
     # Make copy, in case something broken after this script run,
     #  we can restore these file to recover ironic service
+    cp $PATH_INIT_CONF $PATH_INIT_CONF_BAK
     cp $PATH_COMMON_EXCEPTION $PATH_COMMON_EXCEPTION_BAK
+
+    # Add iBMC related conf
+    echo '
+
+from ironic.conf import ibmc
+ibmc.register_opts(CONF)
+' >> $PATH_ENTRY_POINTS_BAK
 
     # Add iBMC related exceptions
     echo '
@@ -64,6 +74,7 @@ class IBMCConnectionError(IBMCError):
 
 # Undo patch function
 function undo_patch {
+    mv -f $PATH_INIT_CONF_BAK $PATH_INIT_CONF
     mv -f $PATH_COMMON_EXCEPTION_BAK $PATH_COMMON_EXCEPTION
     mv -f $PATH_ENTRY_POINTS_BAK $PATH_ENTRY_POINTS
 
