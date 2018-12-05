@@ -76,7 +76,7 @@ $ openstack baremetal node passthru list 506aa36a-29aa-4cda-b0af-009ea9b55d1d -f
   {
     "Response is attachment": false, 
     "Async": false, 
-    "Name": "list_boot_type_order", 
+    "Name": "boot_up_seq", 
     "Supported HTTP methods": "GET", 
     "Description": "Returns a dictionary containing the key \"BootTypeOrderN\", its value is boot type of the node, where \"N\" is the order of boot type"
   }
@@ -86,7 +86,7 @@ $ openstack baremetal node passthru list 506aa36a-29aa-4cda-b0af-009ea9b55d1d -f
 - 2. 查询启动顺序
 
 ```
-$ openstack baremetal node passthru call --http-method GET $NODE list_boot_type_order
+$ openstack baremetal node passthru call --http-method GET $NODE boot_up_seq
 ```
 
 
