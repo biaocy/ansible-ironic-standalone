@@ -1,4 +1,40 @@
 #!/bin/bash
+set -e
+
+# Usage
+function usage {
+    echo "Usage: `basename $0` [uninstall]"
+	cat <<EOF
+	USAGE
+		`basename $0` [uninstall]
+
+	DESCRIPTION
+		Patch script for ironic ibmc driver.
+		
+		Patch when no argument supply.
+		Uninstall patch when first argument is uninstall
+EOF
+	exit 1
+}
+
+# Whether this operation is patch or uninstall the patch.
+# 2: Print usage
+# 1: Uninstall the patch
+# 0: Patch
+IS_PATCH=2
+
+# First argument is operation [patch|undo]
+OP="${1}"
+
+if [ -z "$OP" ]
+then
+	IS_PATCH=0
+elif [ "$OP" == "uninstall" ]
+then
+	IS_PATCH=1
+else
+	usage
+fi
 
 IRONIC_INSTALLED="`pip show ironic --disable-pip-version-check | grep '^Name'`"
 
@@ -81,18 +117,10 @@ function undo_patch {
     echo "Undo patch done!"
 }
 
-# Usage
-function usage {
-    echo "Usage: `basename $0` [patch|undo]"
-}
-
-# First argument is operation [patch|undo]
-OP="${1}"
-
-if [ "$OP" == "patch" ]
+if [ "$IS_PATCH" -eq "0" ]
 then
     patch
-elif [ "$OP" == "undo" ]
+elif [ "$IS_PATCH" -eq "1" ]
 then
     undo_patch
 else
