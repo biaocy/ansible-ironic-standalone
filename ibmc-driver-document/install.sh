@@ -150,7 +150,6 @@ function config {
     local OPTION_STR="$1"
 
     ENABLED_STR=$(grep -E "^$OPTION_STR=" $PATH_IRONIC_CONF || :)
-    ENABLED_STR_NOT_EMPTY=$(grep -E "^$OPTION_STR=(.+)" $PATH_IRONIC_CONF || :)
     IBMC_TYPE="ibmc"
     ENABLED=$(echo $ENABLED_STR | grep -E "ibmc" || :)
     if [ ! -z "$ENABLED" ]
@@ -158,14 +157,9 @@ function config {
         return # Already enabled ibmc related config
     fi
 
-    if [ ! -z "$ENABLED_STR" -a ! -z "$ENABLED_STR_NOT_EMPTY" ]
+    if [ ! -z "$ENABLED_STR" ]
     then
         sed -i -r -e "s/$ENABLED_STR/${ENABLED_STR},${IBMC_TYPE}/" $PATH_IRONIC_CONF
-    elif [ ! -z "$ENABLED_STR" -a -z "$ENABLED_STR_NOT_EMPTY" ]
-    then
-        # empty enabled option like 'enabled_xxx='
-        # so we do not have to prepend comma
-        sed -i -r -e "s/$ENABLED_STR/${ENABLED_STR}${IBMC_TYPE}/" $PATH_IRONIC_CONF
     else
         # option not exist
         echo "$OPTION_STR=$IBMC_TYPE" >> $PATH_IRONIC_CONF
@@ -230,10 +224,13 @@ function undo_patch {
     sed -i -r -e "s/^$IBMC_POWER//" $PATH_ENTRY_POINTS
     sed -i -r -e "s/^$IBMC_VENDOR//" $PATH_ENTRY_POINTS
     # Config ...
-    sed -i -r -e "s/^($IRONIC_CFG_HW=\w*)(,?ibmc)(.*)/\1\3/" $PATH_IRONIC_CONF
-    sed -i -r -e "s/^($IRONIC_CFG_MGMT=\w*)(,?ibmc)(.*)/\1\3/" $PATH_IRONIC_CONF
-    sed -i -r -e "s/^($IRONIC_CFG_POWER=\w*)(,?ibmc)(.*)/\1\3/" $PATH_IRONIC_CONF
-    sed -i -r -e "s/^($IRONIC_CFG_VENDOR=\w*)(,?ibmc)(.*)/\1\3/" $PATH_IRONIC_CONF
+    # Ironic don't allow some option value be empty list (empty string).
+    # In case option value become empty list after uninstall, 
+    #+ we leave comma there intentionally
+    sed -i -r -e "s/^($IRONIC_CFG_HW=.*)(ibmc)(.*)/\1\3/" $PATH_IRONIC_CONF
+    sed -i -r -e "s/^($IRONIC_CFG_MGMT=.*)(ibmc)(.*)/\1\3/" $PATH_IRONIC_CONF
+    sed -i -r -e "s/^($IRONIC_CFG_POWER=.*)(ibmc)(.*)/\1\3/" $PATH_IRONIC_CONF
+    sed -i -r -e "s/^($IRONIC_CFG_VENDOR=.*)(ibmc)(.*)/\1\3/" $PATH_IRONIC_CONF
 
     echo "Uninstall patch done!"
 }
